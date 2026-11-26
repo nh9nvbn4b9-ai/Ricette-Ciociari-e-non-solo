@@ -30,18 +30,9 @@
     <button class="intro-skip" type="button">Salta intro</button>
   </div>
   <script>
-    /* L'intro parte solo sulla home, una volta per visita, e mai con "riduci movimento". */
-    (function () {
-      try {
-        var h = location.hash.replace(/^#\/?/, ''), seen = false;
-        try { seen = sessionStorage.getItem('rcens-intro') === '1'; } catch (e) {}
-        var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if ((h === '' || h === 'home') && !seen && !calm) {
-          document.getElementById('intro').hidden = false;
-          document.documentElement.classList.add('intro-playing');
-        }
-      } catch (e) {}
-    })();
+    /* L'intro parte da sola ogni volta che si apre il sito. */
+    document.getElementById('intro').hidden = false;
+    document.documentElement.classList.add('intro-playing');
   </script>
 
   <!-- ============ INTESTAZIONE + MENU A TENDINA ============ -->

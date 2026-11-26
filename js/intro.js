@@ -21,7 +21,6 @@
   if (!root) return;
   if (!M) { root.hidden = true; html.classList.remove('intro-playing'); return; }
 
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var canvas = root.querySelector('.intro-canvas');
   var stage = root.querySelector('.intro-stage');
   var art = root.querySelector('.intro-art');
@@ -661,7 +660,6 @@
       buildStrands();
       render(0);
     }
-    try { sessionStorage.setItem('rcens-intro', '1'); } catch (e) { /* niente memoria: pazienza */ }
     t0 = performance.now();
     schedule();
     raf = requestAnimationFrame(frame);
@@ -675,8 +673,7 @@
   // il logo della home rilancia l'animazione
   var replay = document.querySelector('[data-replay-intro]');
   if (replay) {
-    if (reduceMotion) replay.removeAttribute('title');
-    replay.addEventListener('click', function () { if (!reduceMotion) play(); });
+    replay.addEventListener('click', function () { play(); });
   }
 
   // solo per controlli automatici: ferma l'animazione al secondo t
@@ -689,8 +686,17 @@
   }
 
   window.RCIntro = { play: play, skip: function () { finish(true); }, seek: seek };
+  // parte da sola all'apertura del sito; se la pagina si apre in secondo piano,
+  // aspetta che diventi visibile così l'intro non va persa
   if (!root.hidden) {
-    if (reduceMotion) { root.hidden = true; html.classList.remove('intro-playing'); }
-    else play();
+    if (document.hidden) {
+      document.addEventListener('visibilitychange', function wait() {
+        if (document.hidden) return;
+        document.removeEventListener('visibilitychange', wait);
+        play();
+      });
+    } else {
+      play();
+    }
   }
 })();

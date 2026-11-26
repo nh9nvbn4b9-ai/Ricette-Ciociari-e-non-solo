@@ -22,7 +22,7 @@
   <!-- ============ INTESTAZIONE + MENU A TENDINA ============ -->
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="#/" aria-label="Ricette Ciociare e non solo – Home">
+      <a class="brand" href="#home" aria-label="Ricette Ciociare e non solo – Home">
         <img src="assets/img/logo.jpg" alt="" width="48" height="48">
         <span class="brand-text">
           <span class="brand-name">Ricette Ciociare</span>
@@ -43,15 +43,15 @@
           </button>
           <nav class="menu-panel" id="menu-tendina" aria-label="Menu principale" data-menu-panel>
             <ul class="menu-list">
-              <li><a href="#/" data-nav="home"><span class="menu-link-title">Home</span><span class="menu-link-sub">Benvenuti</span></a></li>
-              <li><a href="#/chi-siamo" data-nav="chi-siamo"><span class="menu-link-title">Chi siamo</span><span class="menu-link-sub">Arriverà presto</span></a></li>
+              <li><a href="#home" data-nav="home"><span class="menu-link-title">Home</span><span class="menu-link-sub">Benvenuti</span></a></li>
+              <li><a href="#chi-siamo" data-nav="chi-siamo"><span class="menu-link-title">Chi siamo</span><span class="menu-link-sub">Arriverà presto</span></a></li>
               <li>
-                <a href="#/catalogo" data-nav="catalogo"><span class="menu-link-title">Catalogo</span><span class="menu-link-sub">I nostri prodotti</span></a>
+                <a href="#catalogo" data-nav="catalogo"><span class="menu-link-title">Catalogo</span><span class="menu-link-sub">I nostri prodotti</span></a>
                 <ul class="menu-sub">
-                  <li><a href="#/grembiule" data-nav="grembiule"><span class="dot-row" aria-hidden="true"><i style="--c:#d0141c"></i><i style="--c:#1d1b1c"></i><i style="--c:#f4f2ed"></i><i style="--c:#0f7a3d"></i></span>Grembiule · vista 3D</a></li>
+                  <li><a href="#grembiule" data-nav="grembiule"><span class="dot-row" aria-hidden="true"><i style="--c:#d0141c"></i><i style="--c:#1d1b1c"></i><i style="--c:#f4f2ed"></i><i style="--c:#0f7a3d"></i></span>Grembiule · vista 3D</a></li>
                 </ul>
               </li>
-              <li><a href="#/contatti" data-nav="contatti"><span class="menu-link-title">Contatti</span><span class="menu-link-sub">Arriveranno presto</span></a></li>
+              <li><a href="#contatti" data-nav="contatti"><span class="menu-link-title">Contatti</span><span class="menu-link-sub">Arriveranno presto</span></a></li>
             </ul>
           </nav>
         </div>
@@ -70,8 +70,8 @@
             <h1 id="home-title" class="hero-title">Ricette Ciociare <span>e non solo</span></h1>
             <p class="hero-text">Il nostro grembiule con il logo ricamato sul petto, in quattro colori. Sceglilo, giralo in 3D e mettilo nel carrello.</p>
             <div class="hero-actions">
-              <a class="btn btn-gold" href="#/grembiule">Guarda il grembiule in 3D</a>
-              <a class="btn btn-ghost-light" href="#/catalogo">Vai al catalogo</a>
+              <a class="btn btn-gold" href="#grembiule">Guarda il grembiule in 3D</a>
+              <a class="btn btn-ghost-light" href="#catalogo">Vai al catalogo</a>
             </div>
           </div>
           <div class="hero-logo">
@@ -101,7 +101,7 @@
             </ul>
             <div class="price-row">
               <span class="price" data-price-home>0,00 €</span>
-              <a class="btn btn-brown" href="#/grembiule">Scegli il colore</a>
+              <a class="btn btn-brown" href="#grembiule">Scegli il colore</a>
             </div>
           </div>
         </div>
@@ -109,12 +109,12 @@
 
       <section class="section section-soft" aria-label="Prossimamente">
         <div class="container soon-grid">
-          <a class="soon-card" href="#/chi-siamo">
+          <a class="soon-card" href="#chi-siamo">
             <span class="soon-kicker">Chi siamo</span>
             <span class="soon-title">Arriverà presto</span>
             <span class="soon-text">Stiamo preparando la nostra storia.</span>
           </a>
-          <a class="soon-card" href="#/contatti">
+          <a class="soon-card" href="#contatti">
             <span class="soon-kicker">Contatti</span>
             <span class="soon-title">Arriveranno presto</span>
             <span class="soon-text">A breve tutti i modi per scriverci.</span>
@@ -136,7 +136,7 @@
           <img src="assets/img/logo.jpg" alt="" width="120" height="120">
           <h2>Arriverà presto</h2>
           <p>Stiamo scrivendo questa pagina. Torna a trovarci tra un po’!</p>
-          <a class="btn btn-brown" href="#/catalogo">Intanto guarda il catalogo</a>
+          <a class="btn btn-brown" href="#catalogo">Intanto guarda il catalogo</a>
         </div>
       </div>
     </section>
@@ -168,7 +168,7 @@
           <img src="assets/img/logo.jpg" alt="" width="120" height="120">
           <h2>Arriveranno presto</h2>
           <p>A breve qui troverai tutti i nostri contatti.</p>
-          <a class="btn btn-brown" href="#/catalogo">Intanto guarda il catalogo</a>
+          <a class="btn btn-brown" href="#catalogo">Intanto guarda il catalogo</a>
         </div>
       </div>
     </section>
@@ -176,15 +176,15 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <a class="footer-brand" href="#/">
+      <a class="footer-brand" href="#home">
         <img src="assets/img/logo.jpg" alt="" width="56" height="56" loading="lazy">
         <span>Ricette Ciociare<br><em>e non solo</em></span>
       </a>
       <nav class="footer-nav" aria-label="Menu a piè di pagina">
-        <a href="#/">Home</a>
-        <a href="#/chi-siamo">Chi siamo</a>
-        <a href="#/catalogo">Catalogo</a>
-        <a href="#/contatti">Contatti</a>
+        <a href="#home">Home</a>
+        <a href="#chi-siamo">Chi siamo</a>
+        <a href="#catalogo">Catalogo</a>
+        <a href="#contatti">Contatti</a>
       </nav>
       <p class="footer-copy">© <span data-year>2026</span> Ricette Ciociare e non solo</p>
     </div>
@@ -265,7 +265,7 @@
       <ul class="cart-list" data-cart-list></ul>
       <div class="cart-empty" data-cart-empty>
         <p>Il carrello è vuoto.</p>
-        <a class="btn btn-brown" href="#/grembiule" data-close-cart>Scopri il grembiule</a>
+        <a class="btn btn-brown" href="#grembiule" data-close-cart>Scopri il grembiule</a>
       </div>
     </div>
     <footer class="cart-foot" data-cart-foot>

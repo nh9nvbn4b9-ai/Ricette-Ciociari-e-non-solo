@@ -150,21 +150,21 @@
   /* ---------------- Catalogo ---------------- */
   function swatches(p, cls) {
     return p.colori.map(function (c) {
-      return '<a class="' + cls + '" href="#/' + p.id + '/' + c.id + '" style="--c:' + c.hex + '" title="' + c.nome + '"><span class="sr-only">' + p.nome + ' ' + c.nome + '</span></a>';
+      return '<a class="' + cls + '" href="#' + p.id + '-' + c.id + '" style="--c:' + c.hex + '" title="' + c.nome + '"><span class="sr-only">' + p.nome + ' ' + c.nome + '</span></a>';
     }).join('');
   }
   $('[data-product-grid]').innerHTML = CATALOGO.map(function (p) {
     return '<article class="product-card">' +
-      '<a class="product-media" href="#/' + p.id + '" aria-label="' + p.nome + ' – vista 3D">' +
+      '<a class="product-media" href="#' + p.id + '" aria-label="' + p.nome + ' – vista 3D">' +
       '<img src="' + p.immagine + '" alt="' + p.nome + ' nei colori nero, bianco e rosso" loading="lazy" width="1200" height="1600">' +
       '<span class="badge">Vista 3D</span></a>' +
       '<div class="product-body">' +
-      '<h2 class="product-name"><a href="#/' + p.id + '">' + p.nome + '</a></h2>' +
+      '<h2 class="product-name"><a href="#' + p.id + '">' + p.nome + '</a></h2>' +
       '<p class="product-short">' + p.breve + ' · Taglia ' + p.taglie.join(', ').toLowerCase() + '</p>' +
       '<p class="product-desc">' + p.descrizione + '</p>' +
       '<div class="product-swatches" aria-label="Colori disponibili">' + swatches(p, 'swatch') + '</div>' +
       '<div class="product-foot"><span class="price">' + euro.format(p.prezzo) + '</span>' +
-      '<a class="btn btn-brown btn-sm" href="#/' + p.id + '">Scegli il colore</a></div>' +
+      '<a class="btn btn-brown btn-sm" href="#' + p.id + '">Scegli il colore</a></div>' +
       '</div></article>';
   }).join('');
   var swLinks = $('[data-swatch-links]');
@@ -241,7 +241,7 @@
     cfg.style.setProperty('--accent-fabric', c.hex);
     if (viewer) viewer.setColor(c);
     else if (viewerPromise) viewerPromise.then(function (v) { if (v) v.setColor(c); });
-    if (updateHash && history.replaceState) history.replaceState(null, '', '#/' + state.prodotto.id + '/' + c.id);
+    if (updateHash && history.replaceState) history.replaceState(null, '', '#' + state.prodotto.id + '-' + c.id);
   }
   function renderTotal() {
     $('[data-qty-val]').textContent = state.qty;
@@ -268,7 +268,6 @@
     $('[data-close]').addEventListener('click', function () { closeConfigurator(); });
   }
 
-  var cameFromSite = false;
   function openConfigurator(pid, cid) {
     var p = prodotto(pid) || PRODOTTO;
     if (state.prodotto !== p) { state.prodotto = p; renderOptions(); }
@@ -283,9 +282,9 @@
     getViewer().then(function (v) { if (v) v.setActive(true); });
     document.title = p.nome + ' · ' + SITE;
   }
+  // chiudendo si torna alla pagina che c'era sotto (home o catalogo)
   function closeConfigurator() {
-    if (cameFromSite && history.length > 1) history.back();
-    else location.hash = '#/catalogo';
+    location.hash = '#' + (currentView || 'catalogo');
   }
   function hideConfigurator() {
     if (cfg.hidden) return;
@@ -297,27 +296,32 @@
 
   /* ---------------- Router (hash) ---------------- */
   var TITLES = { home: SITE, 'chi-siamo': 'Chi siamo', catalogo: 'Catalogo', contatti: 'Contatti' };
-  var firstRoute = true;
+  // indirizzi: #home, #chi-siamo, #catalogo, #contatti, #grembiule, #grembiule-verde
+  function parseHash() {
+    var h = decodeURIComponent(location.hash.replace(/^#\/?/, '')).replace(/\//g, '-');
+    if (!h) return { view: 'home' };
+    for (var i = 0; i < CATALOGO.length; i++) {
+      var id = CATALOGO[i].id;
+      if (h === id) return { prodotto: id };
+      if (h.indexOf(id + '-') === 0) return { prodotto: id, colore: h.slice(id.length + 1) };
+    }
+    return TITLES[h] ? { view: h } : null;
+  }
   function route() {
-    var h = location.hash;
-    if (h && h.indexOf('#/') !== 0) return;      // ancore interne (es. #contenuto)
-    var parts = h.replace(/^#\/?/, '').split('/');
-    var name = parts[0] || 'home';
-
-    if (prodotto(name)) {
-      cameFromSite = !firstRoute;
-      showView('catalogo', true);
-      openConfigurator(name, parts[1]);
+    var r = parseHash();
+    if (!r) return;                               // ancore interne (es. #contenuto)
+    if (r.prodotto) {
+      if (!currentView) showView('catalogo', true);
+      openConfigurator(r.prodotto, r.colore);
       setActiveNav('grembiule');
     } else {
-      if (!TITLES[name]) name = 'home';
+      var name = r.view;
       hideConfigurator();
       showView(name, false);
       document.title = name === 'home' ? SITE : TITLES[name] + ' · ' + SITE;
       setActiveNav(name);
       if (name === 'catalogo') warmUp();
     }
-    firstRoute = false;
   }
   var currentView = null;
   function showView(name, keepScroll) {
@@ -343,7 +347,7 @@
     e.preventDefault();
     $('#contenuto').focus();
   });
-  $$('a[href^="#/grembiule"]').forEach(function (a) {
+  $$('a[href^="#grembiule"]').forEach(function (a) {
     a.addEventListener('pointerenter', warmUp, { once: true });
     a.addEventListener('focus', warmUp, { once: true });
   });

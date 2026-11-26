@@ -89,8 +89,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .icon-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ----------------------------- Header ----------------------------- */
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60;
+  background: var(--cream);
+}
 .site-header {
-  position: sticky; top: 0; z-index: 50;
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
   background: rgba(251, 245, 234, .9);
   -webkit-backdrop-filter: saturate(1.4) blur(12px); backdrop-filter: saturate(1.4) blur(12px);
   border-bottom: 1px solid var(--line);
@@ -273,7 +277,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
    Configuratore 3D (stile "studio" scuro)
    ========================================================================== */
 .configurator {
-  position: fixed; inset: 0; z-index: 100; display: grid; grid-template-rows: minmax(380px, 64vh) auto; grid-template-rows: minmax(380px, 64svh) auto;
+  position: fixed; inset: 0; z-index: 100;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px); display: grid; grid-template-rows: minmax(380px, 64vh) auto; grid-template-rows: minmax(380px, 64svh) auto;
   background: var(--dark-bg); color: var(--dark-text); overflow-y: auto; overscroll-behavior: contain;
   opacity: 0; transition: opacity .25s var(--ease);
 }
@@ -375,6 +380,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .drawer-backdrop.is-open { opacity: 1; }
 .cart-drawer {
   position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; width: min(420px, 100vw);
+  padding-top: env(safe-area-inset-top, 0px); padding-right: env(safe-area-inset-right, 0px);
   display: flex; flex-direction: column; background: var(--paper); color: var(--ink);
   box-shadow: -20px 0 60px -20px rgba(0, 0, 0, .4);
   transform: translateX(100%); transition: transform .3s var(--ease);

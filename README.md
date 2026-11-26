@@ -7,13 +7,13 @@ che si può ruotare e cambiare colore (rosso, nero, bianco, verde).
 
 | Indirizzo        | Contenuto                                                  |
 | ---------------- | ---------------------------------------------------------- |
-| `#/`             | Home con logo, foto dei grembiuli ricamati e collegamenti  |
-| `#/chi-siamo`    | “Arriverà presto”                                          |
-| `#/catalogo`     | Catalogo (per ora solo il grembiule)                       |
-| `#/grembiule`    | Configuratore 3D: colore, taglia unica, quantità, carrello |
-| `#/contatti`     | “Arriveranno presto”                                       |
+| `#home`          | Home con logo, foto dei grembiuli ricamati e collegamenti  |
+| `#chi-siamo`     | “Arriverà presto”                                          |
+| `#catalogo`      | Catalogo (per ora solo il grembiule)                       |
+| `#grembiule`     | Configuratore 3D: colore, taglia unica, quantità, carrello |
+| `#contatti`      | “Arriveranno presto”                                       |
 
-Si può aprire il grembiule già in un colore: `#/grembiule/verde`, `#/grembiule/nero`…
+Si può aprire il grembiule già in un colore: `#grembiule-verde`, `#grembiule-nero`…
 
 Il menu a tendina è il pulsante **Menu** in alto a destra; accanto c’è il carrello.
 

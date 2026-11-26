@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ricette Ciociare e non solo</title>
+  <meta name="description" content="Ricette Ciociare e non solo – il grembiule con il logo ricamato, in quattro colori. Guardalo in 3D e aggiungilo al carrello.">
+  <meta name="theme-color" content="#5b2f08">
+  <meta property="og:title" content="Ricette Ciociare e non solo">
+  <meta property="og:description" content="Il grembiule con il logo ricamato, in rosso, nero, bianco e verde.">
+  <meta property="og:image" content="assets/img/logo.jpg">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600;1,9..144,700;1,9..144,800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenuto">Vai al contenuto</a>
+
+  <!-- ============ INTESTAZIONE + MENU A TENDINA ============ -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#/" aria-label="Ricette Ciociare e non solo – Home">
+        <img src="assets/img/logo.jpg" alt="" width="48" height="48">
+        <span class="brand-text">
+          <span class="brand-name">Ricette Ciociare</span>
+          <span class="brand-sub">e non solo</span>
+        </span>
+      </a>
+
+      <div class="header-actions">
+        <button class="icon-btn cart-btn" type="button" data-open-cart aria-label="Apri il carrello (0 articoli)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+          <span class="cart-count" data-cart-count hidden>0</span>
+        </button>
+
+        <div class="menu" data-menu>
+          <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-tendina" data-menu-toggle>
+            <span class="menu-label">Menu</span>
+            <span class="burger" aria-hidden="true"><span></span><span></span><span></span></span>
+          </button>
+          <nav class="menu-panel" id="menu-tendina" aria-label="Menu principale" data-menu-panel>
+            <ul class="menu-list">
+              <li><a href="#/" data-nav="home"><span class="menu-link-title">Home</span><span class="menu-link-sub">Benvenuti</span></a></li>
+              <li><a href="#/chi-siamo" data-nav="chi-siamo"><span class="menu-link-title">Chi siamo</span><span class="menu-link-sub">Arriverà presto</span></a></li>
+              <li>
+                <a href="#/catalogo" data-nav="catalogo"><span class="menu-link-title">Catalogo</span><span class="menu-link-sub">I nostri prodotti</span></a>
+                <ul class="menu-sub">
+                  <li><a href="#/grembiule" data-nav="grembiule"><span class="dot-row" aria-hidden="true"><i style="--c:#d0141c"></i><i style="--c:#1d1b1c"></i><i style="--c:#f4f2ed"></i><i style="--c:#0f7a3d"></i></span>Grembiule · vista 3D</a></li>
+                </ul>
+              </li>
+              <li><a href="#/contatti" data-nav="contatti"><span class="menu-link-title">Contatti</span><span class="menu-link-sub">Arriveranno presto</span></a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="contenuto" tabindex="-1">
+
+    <!-- ============ HOME ============ -->
+    <section class="view" data-view="home" aria-labelledby="home-title">
+      <div class="hero">
+        <div class="container hero-inner">
+          <div class="hero-copy">
+            <p class="eyebrow">Benvenuti</p>
+            <h1 id="home-title" class="hero-title">Ricette Ciociare <span>e non solo</span></h1>
+            <p class="hero-text">Il nostro grembiule con il logo ricamato sul petto, in quattro colori. Sceglilo, giralo in 3D e mettilo nel carrello.</p>
+            <div class="hero-actions">
+              <a class="btn btn-gold" href="#/grembiule">Guarda il grembiule in 3D</a>
+              <a class="btn btn-ghost-light" href="#/catalogo">Vai al catalogo</a>
+            </div>
+          </div>
+          <div class="hero-logo">
+            <img src="assets/img/logo.jpg" alt="Logo Ricette Ciociare e non solo" width="640" height="640">
+          </div>
+        </div>
+        <svg class="hero-pasta" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 22 L180 14 L380 26 L560 10 L760 20 L960 8 L1200 18 L1200 60 L0 60 Z"/>
+        </svg>
+      </div>
+
+      <section class="section" aria-labelledby="grembiule-title">
+        <div class="container feature">
+          <figure class="feature-photo">
+            <img src="assets/img/grembiuli-ricamati.jpg" alt="Tre grembiuli ricamati con il logo Ricette Ciociare e non solo: nero, bianco e rosso" width="1200" height="1600" loading="lazy">
+            <figcaption>Il ricamo dal vivo, su nero, bianco e rosso.</figcaption>
+          </figure>
+          <div class="feature-copy">
+            <p class="eyebrow eyebrow-dark">Catalogo</p>
+            <h2 id="grembiule-title" class="section-title">Il grembiule <em>Ricette Ciociare</em></h2>
+            <p class="lead">Logo ricamato, pettorina con laccio al collo e una comoda tasca davanti.</p>
+            <ul class="features">
+              <li><strong>Logo ricamato</strong><span>“Ricette Ciociare e non solo”, con le fettuccine gialle.</span></li>
+              <li><strong>Taglia unica</strong><span>Lacci in vita da annodare dietro.</span></li>
+              <li><strong>Tasca frontale</strong><span>Per mestolo, telefono o ricettario.</span></li>
+              <li><strong>4 colori</strong><span class="swatch-links" data-swatch-links></span></li>
+            </ul>
+            <div class="price-row">
+              <span class="price" data-price-home>0,00 €</span>
+              <a class="btn btn-brown" href="#/grembiule">Scegli il colore</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-soft" aria-label="Prossimamente">
+        <div class="container soon-grid">
+          <a class="soon-card" href="#/chi-siamo">
+            <span class="soon-kicker">Chi siamo</span>
+            <span class="soon-title">Arriverà presto</span>
+            <span class="soon-text">Stiamo preparando la nostra storia.</span>
+          </a>
+          <a class="soon-card" href="#/contatti">
+            <span class="soon-kicker">Contatti</span>
+            <span class="soon-title">Arriveranno presto</span>
+            <span class="soon-text">A breve tutti i modi per scriverci.</span>
+          </a>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============ CHI SIAMO ============ -->
+    <section class="view" data-view="chi-siamo" aria-labelledby="chi-title" hidden>
+      <div class="page-head">
+        <div class="container">
+          <p class="eyebrow eyebrow-dark">Ricette Ciociare e non solo</p>
+          <h1 id="chi-title" class="page-title">Chi siamo</h1>
+        </div>
+      </div>
+      <div class="container coming">
+        <div class="coming-card">
+          <img src="assets/img/logo.jpg" alt="" width="120" height="120">
+          <h2>Arriverà presto</h2>
+          <p>Stiamo scrivendo questa pagina. Torna a trovarci tra un po’!</p>
+          <a class="btn btn-brown" href="#/catalogo">Intanto guarda il catalogo</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CATALOGO ============ -->
+    <section class="view" data-view="catalogo" aria-labelledby="cat-title" hidden>
+      <div class="page-head">
+        <div class="container">
+          <p class="eyebrow eyebrow-dark">Negozio</p>
+          <h1 id="cat-title" class="page-title">Catalogo</h1>
+          <p class="page-intro">Per ora in catalogo c’è il nostro grembiule ricamato. Scegli il colore e guardalo in 3D.</p>
+        </div>
+      </div>
+      <div class="container">
+        <div class="product-grid" data-product-grid></div>
+      </div>
+    </section>
+
+    <!-- ============ CONTATTI ============ -->
+    <section class="view" data-view="contatti" aria-labelledby="contatti-title" hidden>
+      <div class="page-head">
+        <div class="container">
+          <p class="eyebrow eyebrow-dark">Ricette Ciociare e non solo</p>
+          <h1 id="contatti-title" class="page-title">Contatti</h1>
+        </div>
+      </div>
+      <div class="container coming">
+        <div class="coming-card">
+          <img src="assets/img/logo.jpg" alt="" width="120" height="120">
+          <h2>Arriveranno presto</h2>
+          <p>A breve qui troverai tutti i nostri contatti.</p>
+          <a class="btn btn-brown" href="#/catalogo">Intanto guarda il catalogo</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a class="footer-brand" href="#/">
+        <img src="assets/img/logo.jpg" alt="" width="56" height="56" loading="lazy">
+        <span>Ricette Ciociare<br><em>e non solo</em></span>
+      </a>
+      <nav class="footer-nav" aria-label="Menu a piè di pagina">
+        <a href="#/">Home</a>
+        <a href="#/chi-siamo">Chi siamo</a>
+        <a href="#/catalogo">Catalogo</a>
+        <a href="#/contatti">Contatti</a>
+      </nav>
+      <p class="footer-copy">© <span data-year>2026</span> Ricette Ciociare e non solo</p>
+    </div>
+  </footer>
+
+  <!-- ============ CONFIGURATORE 3D DEL PRODOTTO ============ -->
+  <div class="configurator" data-configurator role="dialog" aria-modal="true" aria-labelledby="cfg-title" hidden>
+    <div class="cfg-stage" data-stage>
+      <span class="cfg-tag">Grembiule · 3D</span>
+      <canvas class="cfg-canvas" data-canvas tabindex="0" aria-label="Modello 3D del grembiule. Trascina o usa le frecce per ruotarlo."></canvas>
+      <div class="cfg-fallback" data-fallback hidden>
+        <img src="assets/img/grembiuli-ricamati.jpg" alt="Grembiuli ricamati" width="1200" height="1600">
+        <p>Il tuo browser non supporta la vista 3D: ecco una foto dei grembiuli.</p>
+      </div>
+      <div class="cfg-loading" data-loading><span class="spinner" aria-hidden="true"></span>Preparo il modello 3D…</div>
+      <button class="cfg-close" type="button" data-close aria-label="Chiudi e torna al catalogo">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+      <div class="cfg-views" role="group" aria-label="Scegli la vista">
+        <button type="button" data-view-btn="front" aria-pressed="true">Fronte</button>
+        <button type="button" data-view-btn="side" aria-pressed="false">Lato</button>
+        <button type="button" data-view-btn="back" aria-pressed="false">Retro</button>
+      </div>
+      <p class="cfg-hint">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>
+        Trascina per ruotare
+      </p>
+    </div>
+
+    <aside class="cfg-panel">
+      <h2 id="cfg-title" class="cfg-title" data-p-name tabindex="-1">Grembiule Ricette Ciociare</h2>
+      <p class="cfg-desc" data-p-desc></p>
+
+      <fieldset class="opt">
+        <legend>Colore <span class="opt-value" data-color-name>Rosso</span></legend>
+        <div class="opt-grid" data-color-options></div>
+      </fieldset>
+
+      <fieldset class="opt">
+        <legend>Taglia</legend>
+        <div class="opt-grid">
+          <label class="opt-pill">
+            <input type="radio" name="taglia" value="Unica" checked>
+            <span class="opt-body"><span class="opt-name">Unica</span><span class="opt-meta">Regolabile con i lacci</span></span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="opt">
+        <legend>Quantità</legend>
+        <div class="qty" data-qty>
+          <button type="button" data-qty-dec aria-label="Diminuisci quantità">−</button>
+          <output data-qty-val aria-live="polite">1</output>
+          <button type="button" data-qty-inc aria-label="Aumenta quantità">+</button>
+        </div>
+      </fieldset>
+
+      <div class="cfg-buy">
+        <div class="cfg-total">
+          <span>Totale</span>
+          <strong data-cfg-total>0,00 €</strong>
+        </div>
+        <button class="btn btn-gold btn-block" type="button" data-add>Aggiungi al carrello</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ============ CARRELLO ============ -->
+  <div class="drawer-backdrop" data-cart-backdrop hidden></div>
+  <aside class="cart-drawer" data-cart role="dialog" aria-modal="true" aria-labelledby="cart-title" hidden>
+    <header class="cart-head">
+      <h2 id="cart-title">Il tuo carrello</h2>
+      <button class="icon-btn" type="button" data-close-cart aria-label="Chiudi il carrello">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </header>
+    <div class="cart-body">
+      <ul class="cart-list" data-cart-list></ul>
+      <div class="cart-empty" data-cart-empty>
+        <p>Il carrello è vuoto.</p>
+        <a class="btn btn-brown" href="#/grembiule" data-close-cart>Scopri il grembiule</a>
+      </div>
+    </div>
+    <footer class="cart-foot" data-cart-foot>
+      <div class="cart-total"><span>Totale</span><strong data-cart-total>0,00 €</strong></div>
+      <button class="btn btn-gold btn-block" type="button" data-checkout>Procedi all’ordine</button>
+      <p class="cart-note">Gli ordini online saranno attivi a breve.</p>
+    </footer>
+  </aside>
+
+  <div class="toast" data-toast role="status" aria-live="polite"></div>
+
+  <script src="js/products.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

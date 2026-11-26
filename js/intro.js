@@ -550,7 +550,6 @@
   }
 
   function schedule() {
-    var lineH = function (i) { return (LINES[i][1] - LINES[i][0]) * L.m; };
     if (use3D) {
       animate(canvas, [{ opacity: 0 }, { opacity: 1 }], 0, 0.18);
       animate(pastaEl, [{ opacity: 0 }, { opacity: 1 }], TL.flat + 0.2, 0.3);
@@ -560,7 +559,7 @@
     }
     lineEls.forEach(function (el, i) {
       animate(el.firstChild, [
-        { transform: 'translateY(' + (lineH(i) * 1.05) + 'px)', opacity: 0 },
+        { transform: 'translateY(105%)', opacity: 0 },
         { transform: 'translateY(0)', opacity: 1, offset: 0.6 },
         { transform: 'translateY(0)', opacity: 1 }
       ], tl.lines[i], 0.8, EASE_OUT);
@@ -620,6 +619,8 @@
     root.style.opacity = '';
     html.classList.remove('intro-playing');
     window.removeEventListener('resize', onResize);
+    if (ro) ro.disconnect();
+    stopWaiting();
     document.removeEventListener('keydown', onKey);
     setTimeout(function () { html.classList.remove('intro-reveal'); }, 1600);
   }
@@ -635,7 +636,38 @@
     a.finished.then(done, done);
   }
 
-  function onResize() { finish(true); }
+  // se la finestra cambia misura (barra del browser, pannello che si apre...)
+  // l'intro si riadatta e continua, senza fermarsi
+  var resizeRaf = 0;
+  function onResize() {
+    if (!playing || ending || !t0 || flyStarted) return;
+    cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(function () {
+      if (!playing || ending || flyStarted || !hasSize()) return;
+      layout();
+      if (use3D) { setupCamera(); buildStrands(); }
+    });
+  }
+  var ro = null;
+
+  // aspetta che la pagina sia visibile e abbia una misura vera prima di partire
+  var waitTimer = 0, waitFn = null;
+  function hasSize() { return root.clientWidth > 80 && root.clientHeight > 80; }
+  function ready() { return !document.hidden && hasSize(); }
+  function stopWaiting() {
+    if (!waitFn) return;
+    document.removeEventListener('visibilitychange', waitFn);
+    window.removeEventListener('resize', waitFn);
+    clearInterval(waitTimer);
+    waitFn = null;
+  }
+  function whenReady(cb) {
+    if (ready()) { cb(); return; }
+    waitFn = function () { if (ready()) { stopWaiting(); cb(); } };
+    document.addEventListener('visibilitychange', waitFn);
+    window.addEventListener('resize', waitFn);
+    waitTimer = setInterval(waitFn, 120);
+  }
   function onKey(e) { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); finish(true); } }
 
   function play() {
@@ -651,6 +683,13 @@
     window.scrollTo(0, 0);
     html.style.scrollBehavior = sb;
 
+    t0 = 0;
+    document.addEventListener('keydown', onKey);
+    whenReady(begin);
+  }
+
+  function begin() {
+    if (!playing || ending) return;
     layout();
     use3D = initGL();
     tl = use3D ? TL : FLAT_TL;
@@ -664,7 +703,10 @@
     schedule();
     raf = requestAnimationFrame(frame);
     window.addEventListener('resize', onResize);
-    document.addEventListener('keydown', onKey);
+    if (window.ResizeObserver) {
+      ro = new ResizeObserver(onResize);
+      ro.observe(root);
+    }
   }
 
   root.addEventListener('click', function () { finish(true); });
@@ -686,17 +728,6 @@
   }
 
   window.RCIntro = { play: play, skip: function () { finish(true); }, seek: seek };
-  // parte da sola all'apertura del sito; se la pagina si apre in secondo piano,
-  // aspetta che diventi visibile così l'intro non va persa
-  if (!root.hidden) {
-    if (document.hidden) {
-      document.addEventListener('visibilitychange', function wait() {
-        if (document.hidden) return;
-        document.removeEventListener('visibilitychange', wait);
-        play();
-      });
-    } else {
-      play();
-    }
-  }
+  // parte da sola all'apertura del sito (aspettando che la pagina sia visibile)
+  if (!root.hidden) play();
 })();

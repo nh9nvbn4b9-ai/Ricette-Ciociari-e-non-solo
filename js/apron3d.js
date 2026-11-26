@@ -8,6 +8,7 @@
  *
  * API:  const viewer = Apron3D.create(canvas)
  *       viewer.ready (Promise) · viewer.setColor(colore) · viewer.setView('front'|'side'|'back')
+ *       viewer.setMannequin(bool) – mostra il grembiule indossato da un manichino bianco
  *       viewer.setActive(bool) · viewer.onViewChange = fn(nomeVista|null)
  */
 (function () {
@@ -34,6 +35,9 @@
   var FLOOR_Y = -0.26;
   var TARGET = new V3(0, 0.52, 0);
   var BODY_CENTER_Z = 0.11;     // sposta il busto in modo che ruoti attorno al centro
+  var MAN_CENTER_Z = 0.087;     // centro di rotazione con il manichino
+  var FLOOR_MAN = -0.483;       // pavimento sotto i piedi del manichino
+  var MAN_MS = 1250;            // durata del passaggio con / senza manichino
 
   var VIEWS = { front: 0, side: Math.PI / 2, back: Math.PI };
 
@@ -135,12 +139,61 @@
     var t2 = t * t, t3 = t2 * t;
     return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
   }
-  function body(y) {
+  function bodyGhost(y) {
     var last = BODY.length - 1;
     var t = clamp(y / STEP, 0, last - 1e-6), i = Math.floor(t), f = t - i;
     var k0 = BODY[Math.max(i - 1, 0)], k1 = BODY[i], k2 = BODY[Math.min(i + 1, last)], k3 = BODY[Math.min(i + 2, last)];
     return { a: cr(k0[0], k1[0], k2[0], k3[0], f), b: cr(k0[1], k1[1], k2[1], k3[1], f), zc: cr(k0[2], k1[2], k2[2], k3[2], f) };
   }
+  /* Manichino: sezioni ellittiche del busto (y, semiasse a, semiasse b, centro z) */
+  var TORSO = [
+    [0.30, 0.085, 0.060, -0.085],
+    [0.325, 0.140, 0.096, -0.085],
+    [0.35, 0.162, 0.111, -0.085],
+    [0.38, 0.172, 0.118, -0.085],
+    [0.48, 0.167, 0.112, -0.082],
+    [0.58, 0.150, 0.105, -0.078],
+    [0.66, 0.142, 0.100, -0.076],
+    [0.76, 0.155, 0.110, -0.078],
+    [0.86, 0.170, 0.120, -0.082],
+    [0.95, 0.180, 0.113, -0.085],
+    [1.00, 0.188, 0.104, -0.087],
+    [1.03, 0.183, 0.096, -0.088],
+    [1.055, 0.158, 0.086, -0.088],
+    [1.075, 0.118, 0.075, -0.088],
+    [1.09, 0.080, 0.064, -0.088],
+    [1.10, 0.058, 0.056, -0.088]
+  ];
+  // quanto il tessuto "fa ponte" rispetto al corpo (stretto in vita dove ci sono i lacci)
+  var DRAPE = [[0.40, 1.22], [0.52, 1.12], [0.60, 1.03], [0.68, 1.03], [0.76, 1.10], [0.86, 1.18], [0.95, 1.2]];
+  function interpKeys(keys, y, c) {
+    var n = keys.length;
+    if (y <= keys[0][0]) return keys[0][c];
+    if (y >= keys[n - 1][0]) return keys[n - 1][c];
+    var i = 0;
+    while (keys[i + 1][0] < y) i++;
+    var y0 = keys[i][0], y1 = keys[i + 1][0], h = y1 - y0, t = (y - y0) / h, p0 = keys[i][c], p1 = keys[i + 1][c];
+    var m0 = i > 0 ? (p1 - keys[i - 1][c]) / (y1 - keys[i - 1][0]) : (p1 - p0) / h;
+    var m1 = i + 2 < n ? (keys[i + 2][c] - p0) / (keys[i + 2][0] - y0) : (p1 - p0) / h;
+    var t2 = t * t, t3 = t2 * t;
+    return (2 * t3 - 3 * t2 + 1) * p0 + (t3 - 2 * t2 + t) * h * m0 + (-2 * t3 + 3 * t2) * p1 + (t3 - t2) * h * m1;
+  }
+  function torsoAt(y) { return { a: interpKeys(TORSO, y, 1), b: interpKeys(TORSO, y, 2), cz: interpKeys(TORSO, y, 3) }; }
+  function torsoFrontZ(x, y) {
+    var t = torsoAt(y), q = x / t.a;
+    return Math.abs(q) >= 1 ? t.cz : t.cz + t.b * Math.sqrt(1 - q * q);
+  }
+  // superficie del grembiule indossato dal manichino: segue il busto, sotto i fianchi ricade
+  function bodyMan(y) {
+    var yy = Math.max(y, 0.40), t = torsoAt(yy), off = 0.007;
+    var a = t.a * interpKeys(DRAPE, yy, 1) + off, b = t.b + off, hang = Math.max(0, 0.40 - y);
+    a += hang * 0.12;
+    b += hang * 0.03;
+    return { a: a, b: b, zc: t.cz + b };
+  }
+  var BODYFN = bodyGhost;
+  function body(y) { return BODYFN(y); }
+
   // lunghezza d'arco cumulativa dell'ellisse dal centro davanti (phi = 0) a dietro (phi = PI)
   function arcTable(a, b) {
     var N = 360, s = new Float32Array(N + 1), px = 0, pz = b;
@@ -213,9 +266,9 @@
   }
 
   // nastro (laccio) a sezione rettangolare lungo una curva
-  function ribbon(points, closed, normalFn, width, thick) {
+  function ribbon(points, closed, normalFn, width, thick, segs) {
     var curve = new THREE.CatmullRomCurve3(points, closed, 'catmullrom', 0.5);
-    var len = curve.getLength(), segs = Math.max(12, Math.ceil(len / 0.005));
+    var len = curve.getLength();
     var P = [], N = [], B = [], S = [];
     for (var i = 0; i <= segs; i++) {
       var u = i / segs, p = curve.getPointAt(u), t = curve.getTangentAt(u).normalize();
@@ -251,29 +304,45 @@
     return g;
   }
 
-  function strapGeometries() {
+  function strapGeometries(onMannequin) {
     var list = [];
     var lift = STRAP_T / 2 + 0.0012;
 
     /* laccio del collo */
     var top = place(-BIB + 0.0145, H - 0.002, null, null, lift);
     var bibN = place(-BIB + 0.0145, H).normal;
-    var half = [
-      place(-BIB + 0.0145, H - 0.04, null, null, lift).pos,
-      top.pos,
-      new V3(-0.152, 0.995, top.pos.z - 0.012),
-      new V3(-0.136, 1.065, -0.035),
-      new V3(-0.106, 1.135, -0.083),
-      new V3(-0.068, 1.19, -0.13)
-    ];
-    var neck = half.concat([new V3(0, 1.215, -0.168)])
+    var half, apex, neckZ, rise;
+    if (onMannequin) {
+      // sale sul petto, appoggia sulle spalle e gira dietro la base del collo
+      neckZ = -0.088;
+      half = [place(-BIB + 0.0145, H - 0.04, null, null, lift).pos, top.pos];
+      [[-0.150, 0.985], [-0.134, 1.02], [-0.112, 1.05], [-0.09, 1.071], [-0.07, 1.085]].forEach(function (q) {
+        half.push(new V3(q[0], q[1], torsoFrontZ(q[0], q[1]) + 0.0045));
+      });
+      half.push(new V3(-0.054, 1.093, neckZ - 0.044));
+      apex = new V3(0, 1.097, neckZ - 0.069);
+      rise = [H - 0.01, H + 0.09];
+    } else {
+      neckZ = -0.095;
+      half = [
+        place(-BIB + 0.0145, H - 0.04, null, null, lift).pos,
+        top.pos,
+        new V3(-0.152, 0.995, top.pos.z - 0.012),
+        new V3(-0.136, 1.065, -0.035),
+        new V3(-0.106, 1.135, -0.083),
+        new V3(-0.068, 1.19, -0.13)
+      ];
+      apex = new V3(0, 1.215, -0.168);
+      rise = [H - 0.01, H + 0.13];
+    }
+    var neck = half.concat([apex])
       .concat(half.slice().reverse().map(function (p) { return new V3(-p.x, p.y, p.z); }));
     list.push(ribbon(neck, false, function (p) {
-      var t = smooth(H - 0.01, H + 0.13, p.y);
+      var t = smooth(rise[0], rise[1], p.y);
       var nb = new V3(p.x < 0 ? bibN.x : -bibN.x, 0, bibN.z);
-      var nr = new V3(p.x, 0, p.z + 0.095).normalize();
+      var nr = new V3(p.x, 0, p.z - neckZ).normalize();
       return nb.lerp(nr, t).normalize();
-    }, STRAP_W, STRAP_T));
+    }, STRAP_W, STRAP_T, 150));
 
     /* lacci in vita, fino al fiocco dietro */
     var yt = WAIST - 0.02, bd = body(yt), tab = arcTable(bd.a, bd.b);
@@ -288,7 +357,7 @@
       pts.push(new V3(sx * 0.012, yt, knot.z - 0.002));
       list.push(ribbon(pts, false, function (p) {
         return new V3(p.x / (a * a), 0, (p.z - cz) / (b * b)).normalize();
-      }, STRAP_W, STRAP_T));
+      }, STRAP_W, STRAP_T, 80));
     });
 
     /* fiocco: nodo, due asole e due code */
@@ -299,7 +368,7 @@
     }
     list.push(ribbon(kn, true, function (p) {
       return new V3(0, (p.y - knot.y) / 0.015, (p.z - knot.z + 0.004) / 0.0085).normalize();
-    }, 0.022, STRAP_T));
+    }, 0.022, STRAP_T, 30));
 
     [-1, 1].forEach(function (sx) {
       // asola: anello schiacciato sul piano orizzontale, con la punta un po' sollevata
@@ -310,7 +379,7 @@
       }
       list.push(ribbon(loop, true, function (p) {
         return new V3((p.x - C.x) / (rx * rx), 0, (p.z - C.z) / (rz * rz)).normalize();
-      }, 0.024, STRAP_T));
+      }, 0.024, STRAP_T, 48));
 
       var len = sx < 0 ? 0.25 : 0.22;
       var tail = [
@@ -319,9 +388,105 @@
         new V3(sx * 0.036, knot.y - len * 0.55, knot.z - 0.01),
         new V3(sx * 0.05, knot.y - len, knot.z - 0.004)
       ];
-      list.push(ribbon(tail, false, function () { return new V3(sx * 0.15, 0, -1).normalize(); }, STRAP_W, STRAP_T));
+      list.push(ribbon(tail, false, function () { return new V3(sx * 0.15, 0, -1).normalize(); }, STRAP_W, STRAP_T, 48));
     });
     return list;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Manichino bianco                                                   */
+  /* ------------------------------------------------------------------ */
+  function torsoGeometry() {
+    var y0 = TORSO[0][0], y1 = TORSO[TORSO.length - 1][0], rows = 160, segs = 72, pos = [], idx = [];
+    for (var j = 0; j <= rows; j++) {
+      var y = y0 + (y1 - y0) * j / rows, t = torsoAt(y);
+      for (var i = 0; i < segs; i++) {
+        var ph = Math.PI * 2 * i / segs;
+        pos.push(t.a * Math.sin(ph), y, t.cz + t.b * Math.cos(ph));
+      }
+    }
+    var bottom = pos.length / 3;
+    pos.push(0, y0 - 0.006, torsoAt(y0).cz);
+    var top = pos.length / 3;
+    pos.push(0, y1 + 0.006, torsoAt(y1).cz);
+    for (j = 0; j < rows; j++) {
+      for (i = 0; i < segs; i++) {
+        var a = j * segs + i, b = j * segs + (i + 1) % segs, c = a + segs, d = b + segs;
+        idx.push(a, b, c, b, d, c);
+      }
+    }
+    for (i = 0; i < segs; i++) {
+      idx.push(bottom, (i + 1) % segs, i);
+      idx.push(top, rows * segs + i, rows * segs + (i + 1) % segs);
+    }
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setIndex(idx);
+    g.computeVertexNormals();
+    return g;
+  }
+  // tubo con raggio variabile (braccia e gambe)
+  function tubeGeometry(points, radii, segs, radial) {
+    var curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
+    var fr = curve.computeFrenetFrames(segs, false), pos = [], nor = [], idx = [];
+    for (var i = 0; i <= segs; i++) {
+      var u = i / segs, p = curve.getPointAt(u), x = u * (radii.length - 1), k = Math.min(Math.floor(x), radii.length - 2);
+      var f = x - k, s = f * f * (3 - 2 * f), r = radii[k] + (radii[k + 1] - radii[k]) * s;
+      var N = fr.normals[i], B = fr.binormals[i];
+      for (var j = 0; j <= radial; j++) {
+        var v = j / radial * Math.PI * 2, c = Math.cos(v), sn = Math.sin(v);
+        var nx = N.x * c + B.x * sn, ny = N.y * c + B.y * sn, nz = N.z * c + B.z * sn;
+        pos.push(p.x + nx * r, p.y + ny * r, p.z + nz * r);
+        nor.push(nx, ny, nz);
+      }
+    }
+    for (i = 0; i < segs; i++) {
+      for (j = 0; j < radial; j++) {
+        var a = i * (radial + 1) + j, b = a + radial + 1, c2 = a + 1, d = b + 1;
+        idx.push(a, c2, b, b, c2, d);
+      }
+    }
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    g.setIndex(idx);
+    return g;
+  }
+  function buildMannequin(material) {
+    var group = new THREE.Group(), sphere = new THREE.SphereGeometry(1, 40, 28);
+    function add(geo, cast) {
+      var m = new THREE.Mesh(geo, material);
+      m.castShadow = cast !== false; m.receiveShadow = true;
+      group.add(m);
+      return m;
+    }
+    function ball(c, s, rot) {
+      var m = add(sphere);
+      m.position.set(c[0], c[1], c[2]);
+      m.scale.set(s[0], s[1], s[2]);
+      if (rot) m.rotation.set(rot[0], rot[1], rot[2]);
+      return m;
+    }
+    add(torsoGeometry());
+    // collo e testa stilizzata
+    var neck = add(new THREE.CylinderGeometry(0.05, 0.059, 0.16, 40, 1, true));
+    neck.position.set(0, 1.16, -0.085); neck.rotation.x = 0.07;
+    ball([0, 1.30, -0.073], [0.084, 0.114, 0.099], [0.1, 0, 0]);
+    [-1, 1].forEach(function (sx) {
+      // braccia
+      ball([sx * 0.166, 0.998, -0.088], [0.058, 0.058, 0.058]);
+      var arm = [[0.172, 1.0, -0.088], [0.205, 0.87, -0.09], [0.228, 0.73, -0.087], [0.243, 0.6, -0.072], [0.252, 0.47, -0.058]];
+      add(tubeGeometry(arm.map(function (q) { return new V3(sx * q[0], q[1], q[2]); }), [0.05, 0.046, 0.037, 0.039, 0.028], 70, 28));
+      ball([sx * 0.252, 0.47, -0.058], [0.028, 0.028, 0.028]);
+      ball([sx * 0.256, 0.405, -0.054], [0.022, 0.07, 0.043], [0, 0, -sx * 0.06]);
+      // gambe
+      var leg = [[0.088, 0.45, -0.085], [0.09, 0.22, -0.082], [0.095, 0.02, -0.078], [0.097, -0.16, -0.092], [0.099, -0.40, -0.088]];
+      add(tubeGeometry(leg.map(function (q) { return new V3(sx * q[0], q[1], q[2]); }), [0.093, 0.072, 0.05, 0.054, 0.034], 90, 32));
+      ball([sx * 0.088, 0.45, -0.085], [0.093, 0.093, 0.093]);
+      ball([sx * 0.099, -0.40, -0.088], [0.035, 0.035, 0.035]);
+      ball([sx * 0.102, -0.452, -0.045], [0.043, 0.031, 0.115]);
+    });
+    return group;
   }
 
   /* ------------------------------------------------------------------ */
@@ -620,6 +785,7 @@
     renderer.toneMappingExposure = 1.0;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.localClippingEnabled = true;
 
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var scene = new THREE.Scene();
@@ -634,8 +800,8 @@
     key.target.position.copy(TARGET);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
-    key.shadow.camera.left = -0.9; key.shadow.camera.right = 0.9;
-    key.shadow.camera.top = 0.9; key.shadow.camera.bottom = -0.9;
+    key.shadow.camera.left = -1.15; key.shadow.camera.right = 1.15;
+    key.shadow.camera.top = 1.15; key.shadow.camera.bottom = -1.15;
     key.shadow.camera.near = 1; key.shadow.camera.far = 7;
     key.shadow.bias = -0.0004; key.shadow.normalBias = 0.012; key.shadow.radius = 4;
     scene.add(key, key.target);
@@ -675,7 +841,8 @@
 
     var state = {
       theta: reduceMotion ? 0 : -0.85, phi: 1.475, zoom: 1,
-      vel: 0, anim: null, dragging: false, fit: 2.6, targetY: TARGET.y, active: false, dirty: true, ready: false
+      vel: 0, anim: null, dragging: false, fit: 2.6, targetY: TARGET.y, active: false, dirty: true, ready: false,
+      man: 0, manTo: 0, manE: 0                    // 0 = solo grembiule, 1 = sul manichino
     };
     var viewer = { onViewChange: null };
 
@@ -717,17 +884,68 @@
     });
     var depthMat = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, alphaMap: alphaTex, alphaTest: 0.5 });
 
+    // due forme del grembiule: da solo e indossato dal manichino (stessi vertici, si passa dall'una all'altra)
+    BODYFN = bodyGhost;
     var geo = apronGeometry(poly);
+    var strapG = strapGeometries(false);
+    BODYFN = bodyMan;
+    var geoMan = apronGeometry(poly);
+    var strapM = strapGeometries(true);
+    BODYFN = bodyGhost;
+    var apronFrom = geo.attributes.position.array.slice();
+    var apronTo = geoMan.attributes.position.array;
     var front = new THREE.Mesh(geo, fabricMat);
     front.castShadow = true; front.receiveShadow = true; front.customDepthMaterial = depthMat;
     var back = new THREE.Mesh(geo, backMat);
     back.receiveShadow = true;
     rig.add(front, back);
-    strapGeometries().forEach(function (g) {
+    var straps = strapG.map(function (g, i) {
       var m = new THREE.Mesh(g, strapMat);
       m.castShadow = true; m.receiveShadow = true;
       rig.add(m);
+      return {
+        g: g,
+        p0: g.attributes.position.array.slice(), p1: strapM[i].attributes.position.array,
+        n0: g.attributes.normal.array.slice(), n1: strapM[i].attributes.normal.array
+      };
     });
+
+    // il manichino compare dal basso verso l'alto (piano di taglio che sale)
+    var reveal = new THREE.Plane(new V3(0, -1, 0), FLOOR_MAN - 0.02);
+    var manMat = new THREE.MeshPhysicalMaterial({
+      color: 0xeeebe6, roughness: 0.42, clearcoat: 0.35, clearcoatRoughness: 0.35, envMapIntensity: 0.8,
+      side: THREE.DoubleSide, clippingPlanes: [reveal], clipShadows: true
+    });
+    var mannequin = buildMannequin(manMat);
+    mannequin.visible = false;
+    rig.add(mannequin);
+
+    function easeInOut(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+    function blendMannequin(e) {
+      var P = geo.attributes.position.array;
+      for (var i = 0; i < P.length; i++) P[i] = apronFrom[i] + (apronTo[i] - apronFrom[i]) * e;
+      geo.attributes.position.needsUpdate = true;
+      geo.computeVertexNormals();
+      straps.forEach(function (s) {
+        var p = s.g.attributes.position.array, n = s.g.attributes.normal.array;
+        for (var i = 0; i < p.length; i++) p[i] = s.p0[i] + (s.p1[i] - s.p0[i]) * e;
+        for (i = 0; i < n.length; i += 3) {
+          var x = s.n0[i] + (s.n1[i] - s.n0[i]) * e, y = s.n0[i + 1] + (s.n1[i + 1] - s.n0[i + 1]) * e, z = s.n0[i + 2] + (s.n1[i + 2] - s.n0[i + 2]) * e;
+          var l = Math.sqrt(x * x + y * y + z * z) || 1;
+          n[i] = x / l; n[i + 1] = y / l; n[i + 2] = z / l;
+        }
+        s.g.attributes.position.needsUpdate = true;
+        s.g.attributes.normal.needsUpdate = true;
+        s.g.computeBoundingSphere();
+      });
+      geo.computeBoundingSphere();
+      floor.position.y = FLOOR_Y + (FLOOR_MAN - FLOOR_Y) * e;
+      rig.position.z = BODY_CENTER_Z + (MAN_CENTER_Z - BODY_CENTER_Z) * e;
+      reveal.constant = FLOOR_MAN - 0.02 + (1.44 - FLOOR_MAN + 0.02) * e;
+      mannequin.visible = e > 0.001;
+      state.manE = e;
+      fit();
+    }
 
     var painter = null;
     var current = null;
@@ -763,21 +981,29 @@
     };
 
     /* camera e adattamento */
+    var view = { w: 0, h: 0 };
     function resize() {
       var w = canvas.clientWidth, h = canvas.clientHeight;
       if (!w || !h) return;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
-      // inquadra dal fondo del grembiule (y ≈ 0) al laccio del collo (y ≈ 1.24),
-      // lasciando spazio in basso per i pulsanti Fronte / Lato / Retro
+      camera.updateProjectionMatrix();
+      view.w = w; view.h = h;
+      fit();
+    }
+    // inquadra dal fondo del grembiule al laccio del collo (o dai piedi alla testa del
+    // manichino), lasciando spazio in basso per i pulsanti Fronte / Lato / Retro
+    function fit() {
+      var w = view.w, h = view.h, e = state.manE;
+      if (!w || !h) return;
+      var lo = -0.02 + (FLOOR_MAN - 0.01 + 0.02) * e, hi = 1.26 + (1.43 - 1.26) * e, wid = 0.86 + (0.78 - 0.86) * e;
       var tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
       var top = h < 600 ? 30 : 56, bottom = h < 600 ? 70 : 96;
-      var ppm = Math.min((h - top - bottom) / 1.28, (w - 40) / 0.86);   // pixel per metro
+      var ppm = Math.min((h - top - bottom) / (hi - lo), (w - 40) / wid);   // pixel per metro
       var visible = h / ppm;
       state.fit = visible / 2 / tan;
-      state.targetY = -0.02 - bottom / ppm + visible / 2;
-      camera.updateProjectionMatrix();
+      state.targetY = lo - bottom / ppm + visible / 2;
       state.dirty = true;
     }
     var ro = window.ResizeObserver ? new ResizeObserver(resize) : null;
@@ -816,6 +1042,11 @@
         t: 0, dur: reduceMotion ? 1 : (ms || 750), view: view
       };
     }
+    viewer.setMannequin = function (on) {
+      state.manTo = on ? 1 : 0;
+      if (reduceMotion) { state.man = state.manTo; blendMannequin(state.man); }
+      state.dirty = true;
+    };
     viewer.setView = function (name) {
       if (!(name in VIEWS)) return;
       animateTo(VIEWS[name], 1.475, 1, name);
@@ -906,6 +1137,15 @@
       } else if (!state.dragging && Math.abs(state.vel) > 0.01) {
         state.theta += state.vel * dt;
         state.vel *= Math.exp(-dt * 4.5);
+        moving = true;
+      }
+      if (state.man !== state.manTo) {
+        if (!state.manClock || state.manClock.to !== state.manTo) state.manClock = { t0: now, from: state.man, to: state.manTo };
+        var c = state.manClock, span = Math.abs(c.to - c.from) * MAN_MS || 1;
+        var q = Math.min(1, (now - c.t0) / span);
+        state.man = c.from + (c.to - c.from) * q;
+        if (q >= 1) { state.man = c.to; state.manClock = null; }
+        blendMannequin(easeInOut(state.man));
         moving = true;
       }
       if (moving || state.dirty) {

@@ -201,6 +201,7 @@
           $$('[data-view-btn]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-view-btn') === name)); });
         };
         if (state.colore) v.setColor(state.colore);
+        if (state.manichino) v.setMannequin(true);
         return v.ready;
       })
       .then(function (v) {
@@ -216,6 +217,7 @@
         canvas.hidden = true;
         $('.cfg-views').hidden = true;
         $('.cfg-hint').hidden = true;
+        $('.cfg-mannequin').hidden = true;
       });
     return viewerPromise;
   }
@@ -257,6 +259,14 @@
     $('[data-qty-dec]').addEventListener('click', function () { state.qty = Math.max(1, state.qty - 1); renderTotal(); });
     $$('[data-view-btn]').forEach(function (b) {
       b.addEventListener('click', function () { if (viewer) viewer.setView(b.getAttribute('data-view-btn')); });
+    });
+    // manichino: mostra il grembiule indossato (e lo toglie al secondo clic)
+    var manBtn = $('[data-mannequin]'), manLabel = $('[data-mannequin-label]');
+    manBtn.addEventListener('click', function () {
+      state.manichino = !state.manichino;
+      manBtn.setAttribute('aria-pressed', String(state.manichino));
+      manLabel.textContent = state.manichino ? 'Clicca l’icona per vederlo senza manichino' : 'Clicca l’icona per vederlo indossato';
+      if (viewer) viewer.setMannequin(state.manichino);
     });
     $('[data-add]').addEventListener('click', function () {
       var taglia = ($('input[name="taglia"]:checked') || {}).value || 'Unica';

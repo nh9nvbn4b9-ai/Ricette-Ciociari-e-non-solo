@@ -11,6 +11,10 @@ che si può ruotare e cambiare colore (rosso, nero, bianco, verde).
 | `#chi-siamo`     | “Arriverà presto”                                          |
 | `#catalogo`      | Catalogo (per ora solo il grembiule)                       |
 | `#grembiule`     | Configuratore 3D: colore, taglia unica, quantità, carrello |
+
+Nel configuratore 3D c’è l’icona del **manichino**: cliccandola il grembiule
+compare indossato da un manichino bianco (si può ruotare allo stesso modo);
+cliccandola di nuovo si torna al grembiule da solo.
 | `#contatti`      | “Arriveranno presto”                                       |
 
 Si può aprire il grembiule già in un colore: `#grembiule-verde`, `#grembiule-nero`…

@@ -323,7 +323,7 @@
     if (r.prodotto) {
       if (!currentView) showView('catalogo', true);
       openConfigurator(r.prodotto, r.colore);
-      setActiveNav('grembiule');
+      setActiveNav('catalogo');
     } else {
       var name = r.view;
       hideConfigurator();

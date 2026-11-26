@@ -170,10 +170,41 @@ body::before {
 .hero-text { max-width: 34em; margin: 22px 0 30px; font-size: 18px; color: rgba(255, 255, 255, .86); }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 @media (max-width: 480px) { .hero-actions .btn { flex: 1 1 100%; } }
-.hero-logo { justify-self: center; width: min(100%, 420px); }
-.hero-logo img { width: 100%; transform: rotate(-3deg); box-shadow: 0 30px 60px -25px rgba(0, 0, 0, .6); border-radius: 6px; }
+.hero-logo { justify-self: center; width: min(100%, 420px); padding: 0; border: 0; background: none; cursor: pointer; border-radius: 8px; }
+.hero-logo img { width: 100%; transform: rotate(-3deg); box-shadow: 0 30px 60px -25px rgba(0, 0, 0, .6); border-radius: 6px; transition: transform .5s var(--ease); }
+.hero-logo:hover img { transform: rotate(-1.5deg) scale(1.015); }
+.hero-logo:focus-visible { outline-offset: 10px; }
 @media (max-width: 899px) { .hero-logo { width: min(78%, 340px); order: -1; } }
 .hero-pasta { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 46px; fill: var(--cream); }
+
+/* ----------------------------- Intro animata ----------------------------- */
+html.intro-playing body { overflow: hidden; }
+html.intro-playing .hero-logo img { visibility: hidden; }
+.intro { position: fixed; inset: 0; z-index: 400; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.intro-bg { position: absolute; inset: 0; background: radial-gradient(80% 70% at 50% 48%, var(--brown) 0%, var(--brown) 46%, #3b1d04 100%); }
+.intro-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; }
+.intro-stage { position: absolute; transform-origin: 50% 50%; will-change: transform; }
+.intro-art { position: absolute; }
+.intro-line { position: absolute; left: 0; width: 100%; overflow: hidden; }
+.intro-slider { position: absolute; inset: 0; overflow: hidden; opacity: 0; }
+.intro-line img { position: absolute; left: 0; max-width: none; }
+.intro-pasta {
+  position: absolute; inset: 0; opacity: 0; background: #fecb00;
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+}
+.intro-stamp { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; opacity: 0; border-radius: 6px; }
+.intro-skip {
+  position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  min-height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .28);
+  background: rgba(30, 14, 2, .35); color: rgba(255, 255, 255, .85); font-size: 14px; font-weight: 700; opacity: 0;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: background-color .2s, color .2s;
+}
+.intro-skip:hover { background: rgba(255, 255, 255, .12); color: var(--white); }
+@keyframes intro-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+html.intro-reveal .hero-copy > * { animation: intro-rise .9s var(--ease) both; }
+html.intro-reveal .hero-copy > :nth-child(2) { animation-delay: .08s; }
+html.intro-reveal .hero-copy > :nth-child(3) { animation-delay: .16s; }
+html.intro-reveal .hero-copy > :nth-child(4) { animation-delay: .24s; }
 
 /* ----------------------------- Sezioni ----------------------------- */
 .section { padding: 64px 0; }

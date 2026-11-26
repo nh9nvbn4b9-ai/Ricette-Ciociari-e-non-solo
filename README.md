@@ -23,6 +23,17 @@ Il menu a tendina è il pulsante **Menu** in alto a destra; accanto c’è il ca
 - Oppure, dalla cartella del progetto: `python3 -m http.server` e apri <http://localhost:8000>.
 - Per pubblicarlo basta caricare la cartella così com’è (GitHub Pages, Netlify, qualsiasi hosting).
 
+## Intro animata del logo
+
+Aprendo la home parte un’intro (una volta per visita): un nido di fettuccine
+cade, si srotola e le fettuccine si posano formando la parte gialla del logo;
+poi compaiono le scritte e il logo vola al suo posto. Si salta con “Salta intro”,
+con un clic o con Esc, e non parte se il dispositivo ha attivo “riduci movimento”.
+Per rivederla basta cliccare il logo grande della home.
+
+Il codice è in `js/intro.js` (WebGL, senza librerie). Per toglierla del tutto
+si cancella il blocco `INTRO ANIMATA DEL LOGO` in `index.html`.
+
 ## Modificare prezzo, colori e testi
 
 Tutto in **`js/products.js`**:
@@ -48,6 +59,7 @@ css/style.css         stile del sito
 js/products.js        catalogo: prezzi, colori, testi
 js/app.js             menu a tendina, navigazione, carrello, configuratore
 js/apron3d.js         modello 3D del grembiule (three.js)
+js/intro.js           intro animata con le fettuccine (WebGL)
 js/logo-data.js       ricamo del logo estratto dal logo originale (generato)
 vendor/three.min.js   libreria three.js r159 (licenza MIT)
 assets/img/           logo, icone, foto dei grembiuli

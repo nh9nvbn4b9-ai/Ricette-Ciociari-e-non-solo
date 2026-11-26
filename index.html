@@ -19,6 +19,31 @@
 <body>
   <a class="skip-link" href="#contenuto">Vai al contenuto</a>
 
+  <!-- ============ INTRO ANIMATA DEL LOGO (js/intro.js) ============ -->
+  <div class="intro" id="intro" hidden>
+    <div class="intro-bg"></div>
+    <canvas class="intro-canvas" aria-hidden="true"></canvas>
+    <div class="intro-stage" aria-hidden="true">
+      <div class="intro-art"><div class="intro-pasta"></div></div>
+      <img class="intro-stamp" src="assets/img/logo.jpg" alt="" width="640" height="640">
+    </div>
+    <button class="intro-skip" type="button">Salta intro</button>
+  </div>
+  <script>
+    /* L'intro parte solo sulla home, una volta per visita, e mai con "riduci movimento". */
+    (function () {
+      try {
+        var h = location.hash.replace(/^#\/?/, ''), seen = false;
+        try { seen = sessionStorage.getItem('rcens-intro') === '1'; } catch (e) {}
+        var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if ((h === '' || h === 'home') && !seen && !calm) {
+          document.getElementById('intro').hidden = false;
+          document.documentElement.classList.add('intro-playing');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- ============ INTESTAZIONE + MENU A TENDINA ============ -->
   <header class="site-header">
     <div class="container header-inner">
@@ -74,9 +99,9 @@
               <a class="btn btn-ghost-light" href="#catalogo">Vai al catalogo</a>
             </div>
           </div>
-          <div class="hero-logo">
-            <img src="assets/img/logo.jpg" alt="Logo Ricette Ciociare e non solo" width="640" height="640">
-          </div>
+          <button class="hero-logo" type="button" data-replay-intro title="Rivedi l’animazione del logo">
+            <img src="assets/img/logo.jpg" alt="Logo Ricette Ciociare e non solo – rivedi l’animazione" width="640" height="640">
+          </button>
         </div>
         <svg class="hero-pasta" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
           <path d="M0 22 L180 14 L380 26 L560 10 L760 20 L960 8 L1200 18 L1200 60 L0 60 Z"/>
@@ -278,6 +303,8 @@
   <div class="toast" data-toast role="status" aria-live="polite"></div>
 
   <script src="js/products.js"></script>
+  <script src="js/logo-data.js"></script>
+  <script src="js/intro.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

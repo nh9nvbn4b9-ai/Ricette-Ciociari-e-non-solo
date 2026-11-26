@@ -19,7 +19,7 @@
   var root = document.getElementById('intro');
   var M = window.LOGO_RICAMO;
   if (!root) return;
-  if (!M) { root.hidden = true; html.classList.remove('intro-playing'); return; }
+  if (!M) { root.hidden = true; html.classList.remove('intro-playing', 'intro-lock'); return; }
 
   var canvas = root.querySelector('.intro-canvas');
   var stage = root.querySelector('.intro-stage');
@@ -52,10 +52,10 @@
     start: 0.85, stagger: 0.1, dur: 1.45,        // le fettuccine si srotolano
     lines: [2.2, 2.36, 2.7],                     // scritte
     flat: 3.05, flatDur: 0.4,                    // la pasta diventa grafica
-    stamp: 3.5, bgOut: 3.6, fly: 3.95, flyDur: 0.85
+    stamp: 3.5, fly: 3.85, flyDur: 0.9
   };
   var FLAT_TL = {                                // senza WebGL: solo grafica
-    lines: [0.25, 0.4, 0.75], pasta: 0.55, stamp: 1.35, bgOut: 1.45, fly: 1.8, flyDur: 0.85
+    lines: [0.25, 0.4, 0.75], pasta: 0.55, stamp: 1.35, fly: 1.7, flyDur: 0.9
   };
 
   /* ---------------- piccola libreria vettoriale ---------------- */
@@ -539,7 +539,7 @@
   function off(loc) { if (loc >= 0) gl.disableVertexAttribArray(loc); }
 
   /* ---------------- regia ---------------- */
-  var anims = [], raf = 0, t0 = 0, playing = false, ending = false, flyStarted = false, revealed = false, use3D = false, tl = TL;
+  var anims = [], raf = 0, t0 = 0, playing = false, ending = false, flyStarted = false, use3D = false, tl = TL;
   var heroImg = null;
   var EASE_OUT = 'cubic-bezier(.2,.8,.2,1)';
 
@@ -565,13 +565,14 @@
       ], tl.lines[i], 0.8, EASE_OUT);
     });
     animate(stamp, [{ opacity: 0 }, { opacity: 1 }], tl.stamp, 0.35, 'ease-out');
-    animate(bg, [{ opacity: 1 }, { opacity: 0 }], tl.bgOut, 0.55, 'ease-in-out');
-    animate(skipBtn, [{ opacity: 0 }, { opacity: 1, offset: 0.12 }, { opacity: 1, offset: 0.88 }, { opacity: 0 }], 0.3, tl.bgOut - 0.3);
+    animate(skipBtn, [{ opacity: 0 }, { opacity: 1, offset: 0.12 }, { opacity: 1, offset: 0.88 }, { opacity: 0 }], 0.3, tl.fly - 0.3);
   }
 
   // il timbro vola nella posizione del logo della home
   function startFly() {
+    if (flyStarted) return;
     flyStarted = true;
+    html.classList.remove('intro-lock');          // la pagina riprende la sua misura definitiva
     heroImg = document.querySelector('.hero-logo img');
     var view = document.querySelector('[data-view="home"]');
     if (!heroImg || !view || view.hidden || !heroImg.offsetWidth) {
@@ -594,18 +595,36 @@
     ], { duration: tl.flyDur * 1000, easing: 'ease-in-out', fill: 'both' });
     shadow.__start = tl.fly;
     anims.push(shadow);
-    fly.finished.then(function () { if (playing) finish(false); }).catch(function () {});
+    fly.finished.then(land, function () {});
   }
 
   function frame(now) {
-    raf = requestAnimationFrame(frame);
     var t = (now - t0) / 1000;
     if (use3D && t < TL.flat + 0.7) render(t);
-    if (!revealed && t >= tl.bgOut) {
-      revealed = true;
-      html.classList.add('intro-reveal');
-    }
-    if (!flyStarted && t >= tl.fly) startFly();
+    if (t >= tl.fly) { raf = 0; startFly(); return; }
+    raf = requestAnimationFrame(frame);
+  }
+
+  // il sito compare solo dopo che il logo è arrivato al suo posto
+  var revealTimer = 0;
+  function reveal() {
+    html.classList.remove('intro-playing', 'intro-lock', 'intro-reveal');
+    void html.offsetWidth;                        // fa ripartire le animazioni d'entrata
+    html.classList.add('intro-reveal');
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(function () { html.classList.remove('intro-reveal'); }, 2500);
+  }
+
+  // il logo è atterrato: lo sostituisce quello vero della home, poi sparisce il fondo
+  function land() {
+    if (!playing || ending) return;
+    ending = true;
+    stage.style.visibility = 'hidden';
+    skipBtn.style.visibility = 'hidden';
+    reveal();
+    var a = bg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, easing: 'ease-out', fill: 'forwards' });
+    var done = function () { cleanup(); a.cancel(); };
+    a.finished.then(done, done);
   }
 
   function cleanup() {
@@ -617,21 +636,25 @@
     anims = [];
     root.hidden = true;
     root.style.opacity = '';
-    html.classList.remove('intro-playing');
+    stage.style.visibility = '';
+    skipBtn.style.visibility = '';
+    html.classList.remove('intro-playing', 'intro-lock');
+    window.removeEventListener('wheel', blockScroll, { passive: false });
+    window.removeEventListener('touchmove', blockScroll, { passive: false });
     window.removeEventListener('resize', onResize);
     if (ro) ro.disconnect();
     stopWaiting();
     document.removeEventListener('keydown', onKey);
-    setTimeout(function () { html.classList.remove('intro-reveal'); }, 1600);
   }
+  function blockScroll(e) { e.preventDefault(); }
 
-  function finish(fade) {
+  // "Salta intro" (o pagina senza logo grande): sfuma via e mostra subito il sito
+  function finish() {
     if (!playing || ending) return;
-    if (!revealed) { revealed = true; html.classList.add('intro-reveal'); }
-    if (!fade) { cleanup(); return; }
     ending = true;
     cancelAnimationFrame(raf);
-    var a = root.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, easing: 'ease-out', fill: 'forwards' });
+    reveal();
+    var a = root.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 350, easing: 'ease-out', fill: 'forwards' });
     var done = function () { cleanup(); a.cancel(); };
     a.finished.then(done, done);
   }
@@ -674,10 +697,11 @@
     if (playing) return;
     playing = true;
     flyStarted = false;
-    revealed = false;
     root.hidden = false;
-    html.classList.add('intro-playing');
+    html.classList.add('intro-playing', 'intro-lock');
     html.classList.remove('intro-reveal');
+    window.addEventListener('wheel', blockScroll, { passive: false });
+    window.addEventListener('touchmove', blockScroll, { passive: false });
     var sb = html.style.scrollBehavior;
     html.style.scrollBehavior = 'auto';
     window.scrollTo(0, 0);

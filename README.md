@@ -27,7 +27,8 @@ Il menu a tendina è il pulsante **Menu** in alto a destra; accanto c’è il ca
 
 Ogni volta che si apre il sito parte da sola un’intro: un nido di fettuccine
 cade, si srotola e le fettuccine si posano formando la parte gialla del logo;
-poi compaiono le scritte e il logo vola al suo posto. Si salta con “Salta intro”,
+poi compaiono le scritte, il logo vola al suo posto e solo dopo entrano
+menu, testi e il resto della pagina. Si salta con “Salta intro”,
 con un clic o con Esc. Per rivederla basta cliccare il logo grande della home.
 
 Il codice è in `js/intro.js` (WebGL, senza librerie). Per toglierla del tutto
